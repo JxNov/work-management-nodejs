@@ -37,4 +37,37 @@ module.exports = {
             throw error;
         }
     },
+
+    updateTask: async (taskId, taskData) => {
+        try {
+            const task = await Task.findByPk(taskId);
+            if (!task) {
+                const error = new Error('Task not found');
+                error.status = 404;
+                throw error;
+            }
+
+            const {code, name} = taskData;
+            await task.update({code, name});
+            return task;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    deleteTask: async (taskId) => {
+        try {
+            const task = await Task.findByPk(taskId);
+            if (!task) {
+                const error = new Error('Task not found');
+                error.status = 404;
+                throw error;
+            }
+
+            await task.destroy();
+            return {message: 'Task deleted successfully'};
+        } catch (error) {
+            throw error;
+        }
+    },
 };

@@ -4,8 +4,7 @@ const { successResponse, errorResponse } = require('../../utils/response');
 module.exports = {
   getDailySummary: async (req, res) => {
     try {
-      const { date } = req.query;
-      const summary = await getDailySummary(date);
+      const summary = await getDailySummary(req.query);
 
       return successResponse({
         res,

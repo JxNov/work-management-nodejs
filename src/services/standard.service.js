@@ -4,12 +4,12 @@ module.exports = {
     getAllStandards: async () => {
         try {
             const standards = await TaskStandard.findAll({
-                attributes: ['daily_minimum'],
+                attributes: ['id', 'daily_minimum'],
                 include: [
                     {
                         model: Task,
                         as: 'tasks',
-                        attributes: ['code', 'name'],
+                        attributes: ['id', 'code', 'name'],
                     },
                 ],
             });
@@ -22,8 +22,10 @@ module.exports = {
 
             return standards.map((standard) => {
                 return {
+                    id: standard.id,
                     dailyMinimum: standard.daily_minimum,
                     task: {
+                        id: standard.tasks.id,
                         code: standard.tasks.code,
                         name: standard.tasks.name,
                     },
@@ -53,7 +55,7 @@ module.exports = {
             }
 
             const finalStandard = await TaskStandard.findByPk(standard.id, {
-                attributes: ['daily_minimum'],
+                attributes: ['id', 'daily_minimum'],
                 include: [
                     {
                         model: Task,
@@ -64,12 +66,44 @@ module.exports = {
             });
 
             return {
+                id: finalStandard.id,
                 dailyMinimum: finalStandard.daily_minimum,
                 task: {
                     code: finalStandard.tasks.code,
                     name: finalStandard.tasks.name,
                 },
             };
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    deleteStandard: async (id) => {
+        try {
+            const standard = await TaskStandard.findByPk(id);
+            if (!standard) {
+                const error = new Error('Task standard not found');
+                error.status = 404;
+                throw error;
+            }
+            await standard.destroy();
+            return {message: 'Task standard deleted successfully'};
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    checkKpiStandard: async (taskId, quantity) => {
+        try {
+            const standards = await TaskStandard.findAll({
+                where: {task_id: taskId},
+                include: ['tasks'],
+            });
+
+            return standards.some(standard => {
+                const {daily_minimum} = standard;
+                return quantity >= daily_minimum;
+            });
         } catch (error) {
             throw error;
         }
